@@ -47,6 +47,25 @@ func BlogUpdate(c *fiber.Ctx) error {
 		"statusText": "ok",
 		"msg": "Update Blog",
 	}
+	id := c.Params("id")
+	var record model.Blog
+	database.DBConn.First(&record, id) //get the data in the record variable
+	if record.ID == 0{
+		log.Println("Record not found")
+		context["statusText"] = ""
+		context["msg"] = "Record not found."
+		c.Status(400)
+		return c.JSON(context)
+	}
+	if err := c.BodyParser(&record); err != nil{
+		log.Println("Error parsing the request body.")
+	}
+	result := database.DBConn.Save(record)
+	if result.Error != nil{
+		log.Println("Error saving the request body.")
+	}
+	context["msg"] = "Blog updated successfully."
+	context["data"] = record
 	c.Status(200)
 	return c.JSON(context)
 }
